@@ -31,27 +31,27 @@ class GeoService extends Component
          $cookie = $this->getCookie($settings);
 
          if ($cookie) {
-             // Cookie already exists, so set the location as the cookie value and set 'cached' to true to show that the cookie already existed
+             // Cookie already exists, so get the unserialized cookie value
              $location = @unserialize($cookie->value);
 
-             if ($location === false) {
-                 $location = $cookie->value;
+             // If unserialize was successful, return the location
+             if ($location !== false) {
+                 // Set 'cached' to true to show that the cookie already existed
+                 $location->cached = true;
+
+                 return $location;
              }
-
-             $location->cached = true;
-
-             return $location;
-         } else {
-             // Cookie doesn't exist, so fetch the user's location using api source and store it as a cookie, set 'cached' to false to show that the cookie didn't exist
-             $apiSource = $settings->apiSource;
-             $location = unserialize($this->getLocation($settings, $ipAddress));
-             // $location->cached = false;
-
-             // Log this
-             GeoCookie::$plugin->logService->insertLog(LogRecord::STATUS_SUCCESS, $apiSource, $location);
-
-             return $location;
          }
+
+         // Cookie doesn't exist, so fetch the user's location using api source and store it as a cookie, set 'cached' to false to show that the cookie didn't exist
+         $apiSource = $settings->apiSource;
+         $location = unserialize($this->getLocation($settings, $ipAddress));
+         // $location->cached = false;
+
+         // Log this
+         GeoCookie::$plugin->logService->insertLog(LogRecord::STATUS_SUCCESS, $apiSource, $location);
+
+         return $location;
      }
 
      public function getIpAddress($settings)
